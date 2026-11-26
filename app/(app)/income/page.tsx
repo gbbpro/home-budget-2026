@@ -41,7 +41,7 @@ export default async function IncomePage() {
         <Empty>No income added yet.</Empty>
       ) : (
         <Card className="p-0 sm:p-0">
-          <ul className="divide-y divide-stone-100">
+          <ul className="divide-y divide-stone-100 dark:divide-stone-800">
             {incomes.map((i) => (
               <li key={i.id} className="p-4">
                 <Disclosure
@@ -49,13 +49,13 @@ export default async function IncomePage() {
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <div className="truncate font-medium">{i.name}</div>
-                        <div className="text-xs text-stone-500">
+                        <div className="text-xs text-stone-500 dark:text-stone-400">
                           {[i.owner, `${usd(i.amount, true)} ${freqLabel(i.frequency).toLowerCase()}`].filter(Boolean).join(" · ")}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-semibold tabular-nums">{usd(toMonthly(i.amount, i.frequency))}</div>
-                        <div className="text-xs text-stone-400">/ month · tap to edit</div>
+                        <div className="text-xs text-stone-400 dark:text-stone-500">/ month · tap to edit</div>
                       </div>
                     </div>
                   }

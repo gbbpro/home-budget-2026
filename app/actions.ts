@@ -9,6 +9,7 @@ import { SESSION_COOKIE, SESSION_DAYS, signSession } from "@/lib/auth";
 import { requireSession } from "@/lib/session";
 import { recordSnapshot } from "@/lib/accounts";
 import { fetchQuote } from "@/lib/prices";
+import { todayLocal } from "@/lib/money";
 
 // ---------- form helpers ----------
 const str = (fd: FormData, k: string) => {
@@ -121,7 +122,7 @@ export async function addFundTransaction(fd: FormData) {
   const kind = str(fd, "kind") === "withdraw" ? -1 : 1;
   const amount = Math.abs(money(fd, "amount") ?? 0) * kind;
   if (amount === 0) return;
-  const txDate = str(fd, "tx_date") ?? new Date().toISOString().slice(0, 10);
+  const txDate = str(fd, "tx_date") ?? todayLocal();
   const note = str(fd, "note");
   const projectId = int(fd, "project_id");
   await sql`INSERT INTO fund_transactions (tx_date, amount, note, project_id, created_by)

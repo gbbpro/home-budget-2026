@@ -23,7 +23,7 @@ export default function Nav() {
             key={l.href}
             href={l.href}
             className={`whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium ${
-              active ? "bg-brand-600 text-white" : "text-stone-600 hover:bg-stone-100"
+              active ? "bg-brand-600 text-white" : "text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
             }`}
           >
             {l.label}

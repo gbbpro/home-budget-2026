@@ -9,7 +9,7 @@ import ConfirmButton from "@/components/ConfirmButton";
 
 const signed = (n: number) => (n >= 0 ? "+" : "−") + usd(Math.abs(n));
 const pct = (part: number, whole: number) => (whole ? `${part >= 0 ? "+" : "−"}${Math.abs((part / whole) * 100).toFixed(1)}%` : "");
-const tone = (n: number | null) => (n === null ? "text-stone-500" : n >= 0 ? "text-brand-600" : "text-red-600");
+const tone = (n: number | null) => (n === null ? "text-stone-500 dark:text-stone-400" : n >= 0 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400");
 
 function HoldingForm({ accountId, h }: { accountId: number; h?: HoldingView }) {
   return (
@@ -58,12 +58,12 @@ export default async function InvestmentsPage() {
       </div>
 
       {!live && (
-        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+        <p className="mt-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
           Prices are entered by hand. For live stock & ETF prices, add a free Finnhub key as <code>FINNHUB_API_KEY</code> in Vercel (see README).
         </p>
       )}
       {live && lastPriced && (
-        <p className="mt-3 text-xs text-stone-500">Prices last updated {new Date(lastPriced).toLocaleString("en-US", { timeZone: "America/Denver", dateStyle: "medium", timeStyle: "short" })}</p>
+        <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">Prices last updated {new Date(lastPriced).toLocaleString("en-US", { timeZone: "America/Denver", dateStyle: "medium", timeStyle: "short" })}</p>
       )}
 
       <Card className="my-4">
@@ -82,7 +82,7 @@ export default async function InvestmentsPage() {
                 <div className="flex items-start justify-between gap-3 p-4">
                   <div className="min-w-0">
                     <div className="truncate font-medium">{a.name}</div>
-                    <div className="text-xs text-stone-500">{[kindLabel(a.kind), a.institution, a.owner].filter(Boolean).join(" · ")}</div>
+                    <div className="text-xs text-stone-500 dark:text-stone-400">{[kindLabel(a.kind), a.institution, a.owner].filter(Boolean).join(" · ")}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-xl font-semibold tabular-nums">{usd(a.total)}</div>
@@ -91,15 +91,15 @@ export default async function InvestmentsPage() {
                 </div>
 
                 {a.holdings.length > 0 && (
-                  <ul className="divide-y divide-stone-100 border-t border-stone-100">
+                  <ul className="divide-y divide-stone-100 dark:divide-stone-800 border-t border-stone-100 dark:border-stone-800">
                     {a.holdings.map((h) => (
                       <li key={h.id} className="px-4 py-3">
                         <Disclosure
                           summary={
                             <div className="flex items-center justify-between gap-3 text-sm">
                               <div className="min-w-0">
-                                <div className="font-semibold">{h.symbol}{h.name && <span className="ml-1 font-normal text-stone-500">{h.name}</span>}</div>
-                                <div className="text-xs text-stone-500">
+                                <div className="font-semibold">{h.symbol}{h.name && <span className="ml-1 font-normal text-stone-500 dark:text-stone-400">{h.name}</span>}</div>
+                                <div className="text-xs text-stone-500 dark:text-stone-400">
                                   {h.shares.toLocaleString("en-US", { maximumFractionDigits: 4 })} sh
                                   {h.priced ? ` @ ${usd(h.price!, true)}` : " · no price yet"}
                                 </div>
@@ -124,16 +124,16 @@ export default async function InvestmentsPage() {
                   </ul>
                 )}
                 {a.cash_balance !== 0 && (
-                  <div className="flex justify-between border-t border-stone-100 px-4 py-2 text-sm">
-                    <span className="text-stone-500">Cash</span><span className="tabular-nums">{usd(a.cash_balance)}</span>
+                  <div className="flex justify-between border-t border-stone-100 dark:border-stone-800 px-4 py-2 text-sm">
+                    <span className="text-stone-500 dark:text-stone-400">Cash</span><span className="tabular-nums">{usd(a.cash_balance)}</span>
                   </div>
                 )}
 
-                <div className="space-y-3 border-t border-stone-100 p-4">
-                  <Disclosure summary={<span className="text-sm font-medium text-brand-600">+ Add holding</span>}>
+                <div className="space-y-3 border-t border-stone-100 dark:border-stone-800 p-4">
+                  <Disclosure summary={<span className="text-sm font-medium text-brand-600 dark:text-brand-400">+ Add holding</span>}>
                     <HoldingForm accountId={a.id} />
                   </Disclosure>
-                  <Disclosure summary={<span className="text-sm text-stone-500">Edit account</span>}>
+                  <Disclosure summary={<span className="text-sm text-stone-500 dark:text-stone-400">Edit account</span>}>
                     <AccountForm account={a} kinds={INVEST_KINDS} cashLabel="Uninvested cash" showApy={false} />
                     <form action={deleteAccount} className="mt-2">
                       <input type="hidden" name="id" value={a.id} />
@@ -164,7 +164,7 @@ export default async function InvestmentsPage() {
                   {top.map(([sym, val]) => (
                     <li key={sym}>
                       <div className="flex justify-between gap-2"><span className="font-medium">{sym}</span><span className="tabular-nums">{usd(val)} · {total ? Math.round((val / total) * 100) : 0}%</span></div>
-                      <Bar value={val} max={total} className="bg-stone-400" />
+                      <Bar value={val} max={total} className="bg-stone-400 dark:bg-stone-500" />
                     </li>
                   ))}
                 </ul>

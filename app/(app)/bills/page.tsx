@@ -57,10 +57,10 @@ export default async function BillsPage() {
             const sub = g.items.reduce((s, b) => s + toMonthly(b.amount, b.frequency), 0);
             return (
               <Card key={g.c} className="p-0 sm:p-0">
-                <div className="flex justify-between border-b border-stone-100 px-4 py-2 text-sm font-medium text-stone-500">
+                <div className="flex justify-between border-b border-stone-100 dark:border-stone-800 px-4 py-2 text-sm font-medium text-stone-500 dark:text-stone-400">
                   <span>{g.c}</span><span className="tabular-nums">{usd(sub)}/mo</span>
                 </div>
-                <ul className="divide-y divide-stone-100">
+                <ul className="divide-y divide-stone-100 dark:divide-stone-800">
                   {g.items.map((b) => (
                     <li key={b.id} className="p-4">
                       <Disclosure
@@ -69,9 +69,9 @@ export default async function BillsPage() {
                             <div className="min-w-0">
                               <div className="truncate font-medium">
                                 {b.name}
-                                {b.autopay && <span className="ml-2 rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-brand-700">Auto</span>}
+                                {b.autopay && <span className="ml-2 rounded bg-brand-50 dark:bg-brand-900/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-brand-700 dark:text-brand-300">Auto</span>}
                               </div>
-                              <div className="text-xs text-stone-500">
+                              <div className="text-xs text-stone-500 dark:text-stone-400">
                                 {[b.due_day ? `Due the ${ordinal(b.due_day)}` : null, b.frequency !== "monthly" ? `${usd(b.amount, true)} ${freqLabel(b.frequency).toLowerCase()}` : null, b.notes]
                                   .filter(Boolean).join(" · ") || "Tap to edit"}
                               </div>
