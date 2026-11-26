@@ -1,6 +1,6 @@
 import { addFundTransaction, deleteFundTransaction, saveMonthlyContribution } from "@/app/actions";
 import { getFundBalance, getFundTransactions, getProjects, getSetting } from "@/lib/db";
-import { fmtDate, usd } from "@/lib/money";
+import { fmtDate, todayLocal, usd } from "@/lib/money";
 import { Card, Empty, Field, PageHeader, Stat } from "@/components/ui";
 import SubmitButton from "@/components/SubmitButton";
 import ConfirmButton from "@/components/ConfirmButton";
@@ -10,10 +10,10 @@ export default async function FundPage() {
     getFundTransactions(), getFundBalance(), getProjects(), getSetting("monthly_fund_contribution", "0"),
   ]);
   const monthly = Number(contribution) || 0;
-  const year = new Date().getFullYear().toString();
+  const today = todayLocal();
+  const year = today.slice(0, 4);
   const ytdIn = txs.filter((t) => t.amount > 0 && t.tx_date.startsWith(year)).reduce((s, t) => s + t.amount, 0);
   const ytdOut = txs.filter((t) => t.amount < 0 && t.tx_date.startsWith(year)).reduce((s, t) => s - t.amount, 0);
-  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <>
@@ -31,10 +31,10 @@ export default async function FundPage() {
           <h2 className="mb-3 font-semibold">Record money in or out</h2>
           <form action={addFundTransaction} className="grid gap-3 sm:grid-cols-2">
             <div className="flex gap-2 sm:col-span-2">
-              <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 dark:has-[:checked]:bg-brand-900/40">
                 <input type="radio" name="kind" value="deposit" defaultChecked className="accent-brand-600" /> Deposit
               </label>
-              <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm has-[:checked]:border-red-400 has-[:checked]:bg-red-50">
+              <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm has-[:checked]:border-red-400 dark:has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-red-950/40">
                 <input type="radio" name="kind" value="withdraw" className="accent-red-600" /> Spend
               </label>
             </div>
@@ -53,7 +53,7 @@ export default async function FundPage() {
 
         <Card>
           <h2 className="mb-1 font-semibold">Monthly contribution</h2>
-          <p className="mb-3 text-sm text-stone-500">How much you plan to set aside each month. It's subtracted on the overview and used to forecast when projects are affordable.</p>
+          <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">How much you plan to set aside each month. It's subtracted on the overview and used to forecast when projects are affordable.</p>
           <form action={saveMonthlyContribution} className="flex gap-2">
             <input name="amount" inputMode="decimal" defaultValue={monthly || ""} placeholder="0" className="input" />
             <SubmitButton>Set</SubmitButton>
@@ -66,17 +66,17 @@ export default async function FundPage() {
         <Empty>No deposits or spending recorded yet.</Empty>
       ) : (
         <Card className="p-0 sm:p-0">
-          <ul className="divide-y divide-stone-100">
+          <ul className="divide-y divide-stone-100 dark:divide-stone-800">
             {txs.map((t) => (
               <li key={t.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
                 <div className="min-w-0">
                   <div className="truncate font-medium">{t.note || (t.amount > 0 ? "Deposit" : "Spent")}</div>
-                  <div className="text-xs text-stone-500">
+                  <div className="text-xs text-stone-500 dark:text-stone-400">
                     {[fmtDate(t.tx_date), t.project_name, t.created_by && `by ${t.created_by}`].filter(Boolean).join(" · ")}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className={`font-semibold tabular-nums ${t.amount > 0 ? "text-brand-600" : "text-red-600"}`}>
+                  <span className={`whitespace-nowrap font-semibold tabular-nums ${t.amount > 0 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>
                     {t.amount > 0 ? "+" : "−"}{usd(Math.abs(t.amount), true)}
                   </span>
                   <form action={deleteFundTransaction}>

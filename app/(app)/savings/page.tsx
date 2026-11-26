@@ -37,7 +37,7 @@ export default async function SavingsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="truncate font-medium">{a.name}</div>
-                  <div className="text-xs text-stone-500">
+                  <div className="text-xs text-stone-500 dark:text-stone-400">
                     {[kindLabel(a.kind), a.institution, a.owner, a.apy ? `${a.apy}% APY` : null].filter(Boolean).join(" · ")}
                   </div>
                 </div>
@@ -47,7 +47,7 @@ export default async function SavingsPage() {
               {a.goal ? (
                 <div className="mt-3">
                   <Bar value={a.total} max={a.goal} />
-                  <div className="mt-1 text-xs text-stone-500">
+                  <div className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                     {a.total >= a.goal ? "✓ Goal reached" : `${usd(a.goal - a.total)} to go`} · goal {usd(a.goal)}
                   </div>
                 </div>
@@ -58,10 +58,10 @@ export default async function SavingsPage() {
                 <input name="cash_balance" inputMode="decimal" placeholder="New balance" aria-label="New balance" className="input" />
                 <SubmitButton>Update</SubmitButton>
               </form>
-              <div className="mt-1 text-[11px] text-stone-400">Updated {new Date(a.updated_at).toLocaleDateString("en-US", { timeZone: "America/Denver", month: "short", day: "numeric", year: "numeric" })}</div>
+              <div className="mt-1 text-[11px] text-stone-400 dark:text-stone-500">Updated {new Date(a.updated_at).toLocaleDateString("en-US", { timeZone: "America/Denver", month: "short", day: "numeric", year: "numeric" })}</div>
 
-              <div className="mt-2 border-t border-stone-100 pt-2">
-                <Disclosure summary={<span className="text-sm text-brand-600">Edit details</span>}>
+              <div className="mt-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+                <Disclosure summary={<span className="text-sm text-brand-600 dark:text-brand-400">Edit details</span>}>
                   <AccountForm account={a} kinds={CASH_KINDS} />
                   <form action={deleteAccount} className="mt-2">
                     <input type="hidden" name="id" value={a.id} />

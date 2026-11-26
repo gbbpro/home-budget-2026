@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getBills, getFundBalance, getFundTransactions, getIncomes, getProjects, getSetting } from "@/lib/db";
 import { forecastProjects } from "@/lib/forecast";
-import { fmtMonth, ordinal, toMonthly, usd } from "@/lib/money";
+import { fmtMonth, ordinal, todayLocal, toMonthly, usd } from "@/lib/money";
 import { Bar, Card, Empty, PageHeader, Stat } from "@/components/ui";
 import Trend from "@/components/Trend";
 import { getAccountViews, getSnapshots, splitTotals } from "@/lib/accounts";
@@ -26,7 +26,7 @@ export default async function Overview() {
   const forecast = forecastProjects(projects, spent, balance, monthly);
   const openTotal = forecast.reduce((s, p) => s + p.remaining, 0);
 
-  const today = new Date().getDate();
+  const today = Number(todayLocal().slice(8, 10));
   const upcoming = bills
     .filter((b) => b.due_day && b.frequency === "monthly")
     .map((b) => ({ ...b, daysAway: (b.due_day! - today + 31) % 31 }))
@@ -56,33 +56,33 @@ export default async function Overview() {
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold">Savings & investments</h2>
             <div className="flex gap-3 whitespace-nowrap text-sm">
-              <Link href="/savings" className="text-brand-600 hover:underline">Savings</Link>
-              <Link href="/investments" className="text-brand-600 hover:underline">Investing</Link>
+              <Link href="/savings" className="text-brand-600 dark:text-brand-400 hover:underline">Savings</Link>
+              <Link href="/investments" className="text-brand-600 dark:text-brand-400 hover:underline">Investing</Link>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-stone-500">Total</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-stone-500 dark:text-stone-400">Total</div>
               <div className="text-3xl font-semibold tabular-nums">{usd(worth.total)}</div>
               {change30 !== null && (
-                <div className={`text-xs ${change30 >= 0 ? "text-brand-600" : "text-red-600"}`}>
+                <div className={`text-xs ${change30 >= 0 ? "text-brand-600 dark:text-brand-400" : "text-red-600 dark:text-red-400"}`}>
                   {change30 >= 0 ? "+" : "−"}{usd(Math.abs(change30))} since {new Date(base!.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </div>
               )}
             </div>
             <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-stone-500">Savings</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-stone-500 dark:text-stone-400">Savings</div>
               <div className="text-xl font-semibold tabular-nums">{usd(worth.savings)}</div>
             </div>
             <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-stone-500">Investments</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-stone-500 dark:text-stone-400">Investments</div>
               <div className="text-xl font-semibold tabular-nums">{usd(worth.investments)}</div>
             </div>
           </div>
           {trend.length > 1 ? (
             <div className="mt-4"><Trend points={trend} /></div>
           ) : (
-            <p className="mt-3 text-xs text-stone-500">A trend line appears here once balances have been updated on more than one day.</p>
+            <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">A trend line appears here once balances have been updated on more than one day.</p>
           )}
         </Card>
       )}
@@ -91,28 +91,28 @@ export default async function Overview() {
         <Card className="lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold">Home improvement fund</h2>
-            <Link href="/fund" className="text-sm text-brand-600 hover:underline">Manage →</Link>
+            <Link href="/fund" className="text-sm text-brand-600 dark:text-brand-400 hover:underline">Manage →</Link>
           </div>
           <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-            <div><span className="text-3xl font-semibold tabular-nums">{usd(balance)}</span> <span className="text-sm text-stone-500">saved</span></div>
-            <div className="text-sm text-stone-500">{usd(openTotal)} needed for open projects</div>
+            <div><span className="text-3xl font-semibold tabular-nums">{usd(balance)}</span> <span className="text-sm text-stone-500 dark:text-stone-400">saved</span></div>
+            <div className="text-sm text-stone-500 dark:text-stone-400">{usd(openTotal)} needed for open projects</div>
           </div>
           <div className="mt-3"><Bar value={balance} max={openTotal} /></div>
 
-          <h3 className="mb-2 mt-5 text-sm font-medium text-stone-500">Project line-up</h3>
+          <h3 className="mb-2 mt-5 text-sm font-medium text-stone-500 dark:text-stone-400">Project line-up</h3>
           {forecast.length === 0 ? (
-            <Empty>No open projects yet. <Link href="/projects" className="text-brand-600 underline">Add one</Link>.</Empty>
+            <Empty>No open projects yet. <Link href="/projects" className="text-brand-600 dark:text-brand-400 underline">Add one</Link>.</Empty>
           ) : (
-            <ul className="divide-y divide-stone-100">
+            <ul className="divide-y divide-stone-100 dark:divide-stone-800">
               {forecast.slice(0, 6).map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                   <div className="min-w-0">
                     <div className="truncate font-medium">{p.name}</div>
-                    <div className="text-xs text-stone-500">{usd(p.remaining)} to go</div>
+                    <div className="text-xs text-stone-500 dark:text-stone-400">{usd(p.remaining)} to go</div>
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      p.fundedNow ? "bg-brand-100 text-brand-700" : p.behindSchedule ? "bg-red-50 text-red-700" : "bg-stone-100 text-stone-700"
+                      p.fundedNow ? "bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300" : p.behindSchedule ? "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300" : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200"
                     }`}
                   >
                     {p.fundedNow ? "Funded" : p.affordableBy ? `~${fmtMonth(p.affordableBy)}` : "Set a monthly amount"}
@@ -126,7 +126,7 @@ export default async function Overview() {
         <Card>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold">Coming up</h2>
-            <Link href="/bills" className="text-sm text-brand-600 hover:underline">All bills →</Link>
+            <Link href="/bills" className="text-sm text-brand-600 dark:text-brand-400 hover:underline">All bills →</Link>
           </div>
           {upcoming.length === 0 ? (
             <Empty>Add due days to your monthly bills to see them here.</Empty>
@@ -136,7 +136,7 @@ export default async function Overview() {
                 <li key={b.id} className="flex justify-between gap-2">
                   <span className="truncate">
                     {b.name}
-                    <span className="ml-1 text-xs text-stone-500">
+                    <span className="ml-1 text-xs text-stone-500 dark:text-stone-400">
                       {b.daysAway === 0 ? "today" : `the ${ordinal(b.due_day!)}`}{b.autopay ? " · auto" : ""}
                     </span>
                   </span>
@@ -148,12 +148,12 @@ export default async function Overview() {
 
           {byCategory.length > 0 && (
             <>
-              <h3 className="mb-2 mt-5 text-sm font-medium text-stone-500">Bills by category</h3>
+              <h3 className="mb-2 mt-5 text-sm font-medium text-stone-500 dark:text-stone-400">Bills by category</h3>
               <ul className="space-y-2 text-sm">
                 {byCategory.map(([cat, amt]) => (
                   <li key={cat}>
                     <div className="flex justify-between"><span>{cat}</span><span className="tabular-nums">{usd(amt)}</span></div>
-                    <Bar value={amt} max={billsTotal} className="bg-stone-400" />
+                    <Bar value={amt} max={billsTotal} className="bg-stone-400 dark:bg-stone-500" />
                   </li>
                 ))}
               </ul>

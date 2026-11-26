@@ -1,4 +1,5 @@
 import { sql } from "./db";
+import { todayLocal } from "./money";
 
 export const CASH_KINDS = [
   { value: "savings", label: "Savings" },
@@ -72,7 +73,7 @@ export function splitTotals(accounts: AccountView[]) {
 /** Save today's totals so the overview can show a trend. Called after any balance or price change. */
 export async function recordSnapshot() {
   const { savings, investments } = splitTotals(await getAccountViews());
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: process.env.TZ_NAME || "America/Denver" });
+  const today = todayLocal();
   await sql`INSERT INTO net_worth_snapshots (snap_date, savings, investments)
     VALUES (${today}, ${savings.toFixed(2)}, ${investments.toFixed(2)})
     ON CONFLICT (snap_date) DO UPDATE SET savings = EXCLUDED.savings, investments = EXCLUDED.investments`;

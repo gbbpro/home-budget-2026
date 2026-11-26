@@ -65,15 +65,15 @@ export default async function ProjectsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{p.name}</span>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${st.cls}`}>{st.label}</span>
-                    {p.priority === 1 && p.status !== "done" && <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">High priority</span>}
+                    {p.priority === 1 && p.status !== "done" && <span className="rounded-full bg-red-50 dark:bg-red-950/40 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">High priority</span>}
                   </div>
-                  <div className="mt-0.5 text-xs text-stone-500">
+                  <div className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
                     {[p.room, (p.target_start || p.target_end) && `${fmtDate(p.target_start)} → ${fmtDate(p.target_end)}`].filter(Boolean).join(" · ") || "Tap to edit"}
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
                   <div className="font-semibold tabular-nums">{usd(p.status === "done" && p.actual_cost != null ? p.actual_cost : p.estimate)}</div>
-                  <div className="text-xs text-stone-400">{p.status === "done" && p.actual_cost != null ? `est. ${usd(p.estimate)}` : "estimate"}</div>
+                  <div className="text-xs text-stone-400 dark:text-stone-500">{p.status === "done" && p.actual_cost != null ? `est. ${usd(p.estimate)}` : "estimate"}</div>
                 </div>
               </div>
               {f && (
@@ -81,10 +81,10 @@ export default async function ProjectsPage() {
                   {spentOn > 0 && (
                     <div className="mb-1">
                       <Bar value={spentOn} max={p.estimate} className={spentOn > p.estimate ? "bg-red-500" : "bg-amber-400"} />
-                      <div className="mt-0.5 text-xs text-stone-500">{usd(spentOn)} spent of {usd(p.estimate)}</div>
+                      <div className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">{usd(spentOn)} spent of {usd(p.estimate)}</div>
                     </div>
                   )}
-                  <div className={`text-xs ${f.fundedNow ? "text-brand-600" : f.behindSchedule ? "text-red-600" : "text-stone-500"}`}>
+                  <div className={`text-xs ${f.fundedNow ? "text-brand-600 dark:text-brand-400" : f.behindSchedule ? "text-red-600 dark:text-red-400" : "text-stone-500 dark:text-stone-400"}`}>
                     {f.fundedNow
                       ? "✓ Covered by the fund today"
                       : f.affordableBy
@@ -93,7 +93,7 @@ export default async function ProjectsPage() {
                   </div>
                 </div>
               )}
-              {p.description && <p className="mt-2 whitespace-pre-line text-sm text-stone-600">{p.description}</p>}
+              {p.description && <p className="mt-2 whitespace-pre-line text-sm text-stone-600 dark:text-stone-300">{p.description}</p>}
             </div>
           }
         >
@@ -130,10 +130,10 @@ export default async function ProjectsPage() {
         <>
           {open.length > 0 && (
             <Card className="p-0 sm:p-0">
-              <p className="border-b border-stone-100 px-4 py-2 text-xs text-stone-500">
+              <p className="border-b border-stone-100 dark:border-stone-800 px-4 py-2 text-xs text-stone-500 dark:text-stone-400">
                 In line by status, then priority, then target date. Forecast assumes {usd(monthly)}/month into the fund.
               </p>
-              <ul className="divide-y divide-stone-100">
+              <ul className="divide-y divide-stone-100 dark:divide-stone-800">
                 {[...forecast.values()].map((f) => renderProject(f))}
               </ul>
             </Card>
@@ -141,7 +141,7 @@ export default async function ProjectsPage() {
           {done.length > 0 && (
             <>
               <h2 className="mb-2 mt-8 font-semibold">Done</h2>
-              <Card className="p-0 sm:p-0"><ul className="divide-y divide-stone-100">{done.map(renderProject)}</ul></Card>
+              <Card className="p-0 sm:p-0"><ul className="divide-y divide-stone-100 dark:divide-stone-800">{done.map(renderProject)}</ul></Card>
             </>
           )}
         </>

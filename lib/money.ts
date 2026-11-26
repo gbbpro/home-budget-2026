@@ -34,3 +34,7 @@ export const ordinal = (n: number) => {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 };
+
+/** Today's date as YYYY-MM-DD in the household's time zone (the server runs in UTC). */
+export const HOME_TZ = process.env.TZ_NAME || "America/Denver";
+export const todayLocal = () => new Date().toLocaleDateString("en-CA", { timeZone: HOME_TZ });

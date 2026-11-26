@@ -17,10 +17,10 @@ export default function Trend({ points }: { points: { date: string; value: numbe
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} className="h-24 w-full" preserveAspectRatio="none" role="img" aria-label="Net worth over time">
-        <path d={area} className="fill-brand-50" />
-        <path d={line} className="fill-none stroke-brand-600" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+        <path d={area} className="fill-brand-50 dark:fill-brand-900/40" />
+        <path d={line} className="fill-none stroke-brand-600 dark:stroke-brand-400" strokeWidth={2} vectorEffect="non-scaling-stroke" />
       </svg>
-      <div className="mt-1 flex justify-between text-[11px] text-stone-400">
+      <div className="mt-1 flex justify-between text-[11px] text-stone-400 dark:text-stone-500">
         <span>{fmt(points[0].date)}</span><span>{fmt(points[points.length - 1].date)}</span>
       </div>
     </div>
