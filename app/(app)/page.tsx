@@ -3,12 +3,19 @@ import { getBills, getFundBalance, getFundTransactions, getIncomes, getProjects,
 import { forecastProjects } from "@/lib/forecast";
 import { fmtMonth, ordinal, toMonthly, usd } from "@/lib/money";
 import { Bar, Card, Empty, PageHeader, Stat } from "@/components/ui";
+import Trend from "@/components/Trend";
+import { getAccountViews, getSnapshots, splitTotals } from "@/lib/accounts";
 
 export default async function Overview() {
-  const [incomes, bills, projects, txs, balance, contribution] = await Promise.all([
+  const [incomes, bills, projects, txs, balance, contribution, accounts, snapshots] = await Promise.all([
     getIncomes(), getBills(), getProjects(), getFundTransactions(), getFundBalance(),
-    getSetting("monthly_fund_contribution", "0"),
+    getSetting("monthly_fund_contribution", "0"), getAccountViews(), getSnapshots(),
   ]);
+  const worth = splitTotals(accounts);
+  const trend = snapshots.map((s) => ({ date: s.date, value: s.savings + s.investments }));
+  const monthAgo = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+  const base = [...trend].reverse().find((p) => p.date <= monthAgo) ?? trend[0];
+  const change30 = base && trend.length > 1 ? worth.total - base.value : null;
   const monthly = Number(contribution) || 0;
   const income = incomes.reduce((s, i) => s + toMonthly(i.amount, i.frequency), 0);
   const billsTotal = bills.reduce((s, b) => s + toMonthly(b.amount, b.frequency), 0);
@@ -43,6 +50,42 @@ export default async function Overview() {
         <Stat label="To home fund" value={usd(monthly)} hint="planned each month" />
         <Stat label="Left over" value={usd(left)} tone={left >= 0 ? "good" : "bad"} hint={left >= 0 ? "after bills & fund" : "over budget"} />
       </div>
+
+      {accounts.length > 0 && (
+        <Card className="mt-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Savings & investments</h2>
+            <div className="flex gap-3 whitespace-nowrap text-sm">
+              <Link href="/savings" className="text-brand-600 hover:underline">Savings</Link>
+              <Link href="/investments" className="text-brand-600 hover:underline">Investing</Link>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-stone-500">Total</div>
+              <div className="text-3xl font-semibold tabular-nums">{usd(worth.total)}</div>
+              {change30 !== null && (
+                <div className={`text-xs ${change30 >= 0 ? "text-brand-600" : "text-red-600"}`}>
+                  {change30 >= 0 ? "+" : "−"}{usd(Math.abs(change30))} since {new Date(base!.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-stone-500">Savings</div>
+              <div className="text-xl font-semibold tabular-nums">{usd(worth.savings)}</div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-stone-500">Investments</div>
+              <div className="text-xl font-semibold tabular-nums">{usd(worth.investments)}</div>
+            </div>
+          </div>
+          {trend.length > 1 ? (
+            <div className="mt-4"><Trend points={trend} /></div>
+          ) : (
+            <p className="mt-3 text-xs text-stone-500">A trend line appears here once balances have been updated on more than one day.</p>
+          )}
+        </Card>
+      )}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">

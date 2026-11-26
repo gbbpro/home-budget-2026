@@ -62,3 +62,41 @@ CREATE TABLE IF NOT EXISTS settings (
 
 INSERT INTO settings (key, value) VALUES ('monthly_fund_contribution', '0')
 ON CONFLICT (key) DO NOTHING;
+
+-- ---------- Savings & investments ----------
+
+-- kind: savings, checking, money_market, cd, cash_other  (shown on Savings)
+--       brokerage, retirement, hsa, crypto, invest_other (shown on Investments)
+CREATE TABLE IF NOT EXISTS accounts (
+  id           SERIAL PRIMARY KEY,
+  name         TEXT NOT NULL,
+  institution  TEXT,
+  owner        TEXT,
+  kind         TEXT NOT NULL DEFAULT 'savings',
+  cash_balance NUMERIC(14,2) NOT NULL DEFAULT 0,
+  apy          NUMERIC(6,3),
+  goal         NUMERIC(14,2),
+  notes        TEXT,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS holdings (
+  id               SERIAL PRIMARY KEY,
+  account_id       INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  symbol           TEXT NOT NULL,
+  name             TEXT,
+  shares           NUMERIC(18,6) NOT NULL DEFAULT 0,
+  cost_basis       NUMERIC(14,2),
+  price            NUMERIC(14,4),
+  prev_close       NUMERIC(14,4),
+  price_updated_at TIMESTAMPTZ,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- One row per day, written whenever balances or prices change. Powers the net worth trend.
+CREATE TABLE IF NOT EXISTS net_worth_snapshots (
+  snap_date   DATE PRIMARY KEY,
+  savings     NUMERIC(14,2) NOT NULL,
+  investments NUMERIC(14,2) NOT NULL
+);
