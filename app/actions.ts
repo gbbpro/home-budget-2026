@@ -7,6 +7,8 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { SESSION_COOKIE, SESSION_DAYS, signSession } from "@/lib/auth";
 import { requireSession } from "@/lib/session";
+import { recordSnapshot } from "@/lib/accounts";
+import { fetchQuote } from "@/lib/prices";
 
 // ---------- form helpers ----------
 const str = (fd: FormData, k: string) => {
@@ -169,4 +171,96 @@ export async function deleteProject(fd: FormData) {
   await requireSession();
   await sql`DELETE FROM projects WHERE id = ${id(fd)}`;
   refresh("/projects", "/fund");
+}
+
+// ---------- savings & investment accounts ----------
+const accountPaths = () => refresh("/savings", "/investments");
+
+export async function saveAccount(fd: FormData) {
+  await requireSession();
+  const name = str(fd, "name") ?? "Account";
+  const institution = str(fd, "institution");
+  const owner = str(fd, "owner");
+  const kind = str(fd, "kind") ?? "savings";
+  const cash = money(fd, "cash_balance") ?? 0;
+  const apy = money(fd, "apy");
+  const goal = money(fd, "goal");
+  const notes = str(fd, "notes");
+  const rowId = int(fd, "id");
+  if (rowId) {
+    await sql`UPDATE accounts SET name=${name}, institution=${institution}, owner=${owner}, kind=${kind},
+      cash_balance=${cash}, apy=${apy}, goal=${goal}, notes=${notes}, updated_at=now() WHERE id=${rowId}`;
+  } else {
+    await sql`INSERT INTO accounts (name, institution, owner, kind, cash_balance, apy, goal, notes)
+      VALUES (${name}, ${institution}, ${owner}, ${kind}, ${cash}, ${apy}, ${goal}, ${notes})`;
+  }
+  await recordSnapshot();
+  accountPaths();
+}
+
+/** Quick balance update for a savings account without opening the full form. */
+export async function updateBalance(fd: FormData) {
+  await requireSession();
+  const cash = money(fd, "cash_balance");
+  if (cash === null) return;
+  await sql`UPDATE accounts SET cash_balance=${cash}, updated_at=now() WHERE id=${id(fd)}`;
+  await recordSnapshot();
+  accountPaths();
+}
+
+export async function deleteAccount(fd: FormData) {
+  await requireSession();
+  await sql`DELETE FROM accounts WHERE id = ${id(fd)}`;
+  await recordSnapshot();
+  accountPaths();
+}
+
+export async function saveHolding(fd: FormData) {
+  await requireSession();
+  const accountId = int(fd, "account_id");
+  if (!accountId) throw new Error("Missing account");
+  const symbol = (str(fd, "symbol") ?? "").toUpperCase();
+  if (!symbol) return;
+  const name = str(fd, "name");
+  const shares = Number(String(fd.get("shares") ?? "0").replace(/[,\s]/g, "")) || 0;
+  const cost = money(fd, "cost_basis");
+  const manualPrice = money(fd, "price");
+  const rowId = int(fd, "id");
+
+  // Try a live quote; fall back to the hand-entered price.
+  const quote = await fetchQuote(symbol);
+  const price = quote?.price ?? manualPrice;
+  const prev = quote?.prevClose ?? null;
+
+  if (rowId) {
+    await sql`UPDATE holdings SET symbol=${symbol}, name=${name}, shares=${shares}, cost_basis=${cost},
+      price=${price}, prev_close=${prev}, price_updated_at=${price !== null ? new Date().toISOString() : null}
+      WHERE id=${rowId}`;
+  } else {
+    await sql`INSERT INTO holdings (account_id, symbol, name, shares, cost_basis, price, prev_close, price_updated_at)
+      VALUES (${accountId}, ${symbol}, ${name}, ${shares}, ${cost}, ${price}, ${prev},
+              ${price !== null ? new Date().toISOString() : null})`;
+  }
+  await sql`UPDATE accounts SET updated_at=now() WHERE id=${accountId}`;
+  await recordSnapshot();
+  accountPaths();
+}
+
+export async function deleteHolding(fd: FormData) {
+  await requireSession();
+  await sql`DELETE FROM holdings WHERE id = ${id(fd)}`;
+  await recordSnapshot();
+  accountPaths();
+}
+
+export async function refreshPrices() {
+  await requireSession();
+  const rows = await sql`SELECT DISTINCT symbol FROM holdings`;
+  const quotes = await Promise.all(rows.map(async (r) => [r.symbol as string, await fetchQuote(r.symbol)] as const));
+  for (const [symbol, q] of quotes) {
+    if (!q) continue;
+    await sql`UPDATE holdings SET price=${q.price}, prev_close=${q.prevClose}, price_updated_at=now() WHERE symbol=${symbol}`;
+  }
+  await recordSnapshot();
+  accountPaths();
 }
